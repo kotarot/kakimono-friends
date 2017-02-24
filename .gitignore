@@ -94,6 +94,7 @@ ENV/
 mnist/result/*
 mnist/result_cnn_v1/*
 mnist/result_cnn_v1_noise/*
+mnist/result_cnn_v1_shift/*
 mnist/result_cnn_v2/*
 mnist/result_cnn_v3/*
 mnist/result_cnn_v4/*

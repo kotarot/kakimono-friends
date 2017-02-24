@@ -42,12 +42,15 @@ def main():
                         help='Resume the training from snapshot')
     parser.add_argument('--noise', '-n', action='store_true', default=False,
                         help='Use MNIST with noises')
+    parser.add_argument('--shift', '-s', action='store_true', default=False,
+                        help='Use MNIST with position shift')
     args = parser.parse_args()
 
     print('GPU: {}'.format(args.gpu))
     print('# Minibatch-size: {}'.format(args.batchsize))
     print('# epoch: {}'.format(args.epoch))
     print('MNIST noise: {}'.format(args.noise))
+    print('MNIST shift: {}'.format(args.shift))
     print('')
 
     # Set up a neural network to train
@@ -63,41 +66,87 @@ def main():
     optimizer.setup(model)
 
     # Load the MNIST dataset
-    _train, _test = chainer.datasets.get_mnist(ndim=3)
+    train_raw, test_raw = chainer.datasets.get_mnist(ndim=3)
 
     # Add noise
-    if not args.noise:
-        train, test = _train, _test
-    else:
+    if args.noise:
         args.out += '_noise'
         train_data, train_label = [], []
         test_data, test_label = [], []
         np.random.seed(12345)
         for k in range(4):
-            for train_orig in _train:
-                noised = np.random.normal(0, 0.05, (len(train_orig[0][0]), len(train_orig[0][0][0])))
-                for j, row in enumerate(train_orig[0][0]):
-                    for i, d in enumerate(row):
-                        noised[j][i] += d
+            for raw in train_raw:
+                noised = np.random.normal(0, 0.01, (28, 28))
+                for j in range(28):
+                    for i in range(28):
+                        noised[j][i] += raw[0][0][j][i]
                         if noised[j][i] < 0:
                             noised[j][i] = 0.0
                         elif 1 < noised[j][i]:
                             noised[j][i] = 1.0
                 train_data.append(np.array([noised], dtype=np.float32))
-                train_label.append(np.int32(train_orig[1]))
-            for test_orig in _test:
-                noised = np.random.normal(0, 0.05, (len(test_orig[0][0]), len(test_orig[0][0][0])))
-                for j, row in enumerate(test_orig[0][0]):
-                    for i, d in enumerate(row):
-                        noised[j][i] += d
+                train_label.append(np.int32(raw[1]))
+            for raw in test_raw:
+                noised = np.random.normal(0, 0.01, (28, 28))
+                for j in range(28):
+                    for i in range(28):
+                        noised[j][i] += raw[0][0][j][i]
                         if noised[j][i] < 0:
                             noised[j][i] = 0.0
                         elif 1 < noised[j][i]:
                             noised[j][i] = 1.0
                 test_data.append(np.array([noised], dtype=np.float32))
-                test_label.append(np.int32(train_orig[1]))
+                test_label.append(np.int32(raw[1]))
             train = chainer.datasets.tuple_dataset.TupleDataset(train_data, train_label)
             test = chainer.datasets.tuple_dataset.TupleDataset(test_data, test_label)
+    # Position shift
+    elif args.shift:
+        args.out += '_shift'
+        train_data, train_label = [], []
+        test_data, test_label = [], []
+        for k in range(5):
+            for raw in train_raw:
+                shifted = [[ 0.0 for __ in range(28) ] for _ in range(28) ]
+                for j in range(28):
+                    for i in range(28):
+                        try:
+                            if k == 0:
+                                shifted[j][i] = raw[0][0][j][i]
+                            elif k == 1:
+                                shifted[j][i] = raw[0][0][j][i - 1]
+                            elif k == 2:
+                                shifted[j][i] = raw[0][0][j][i + 1]
+                            elif k == 3:
+                                shifted[j][i] = raw[0][0][j - 1][i]
+                            elif k == 4:
+                                shifted[j][i] = raw[0][0][j + 1][i]
+                        except IndexError:
+                            shifted[j][i] = 0.0
+                train_data.append(np.array([shifted], dtype=np.float32))
+                train_label.append(np.int32(raw[1]))
+            for raw in test_raw:
+                shifted = [[ 0.0 for __ in range(28) ] for _ in range(28) ]
+                for j in range(28):
+                    for i in range(28):
+                        try:
+                            if k == 0:
+                                shifted[j][i] = raw[0][0][j][i]
+                            elif k == 1:
+                                shifted[j][i] = raw[0][0][j][i - 1]
+                            elif k == 2:
+                                shifted[j][i] = raw[0][0][j][i + 1]
+                            elif k == 3:
+                                shifted[j][i] = raw[0][0][j - 1][i]
+                            elif k == 4:
+                                shifted[j][i] = raw[0][0][j + 1][i]
+                        except IndexError:
+                            shifted[j][i] = 0.0
+                test_data.append(np.array([shifted], dtype=np.float32))
+                test_label.append(np.int32(raw[1]))
+            train = chainer.datasets.tuple_dataset.TupleDataset(train_data, train_label)
+            test = chainer.datasets.tuple_dataset.TupleDataset(test_data, test_label)
+    else:
+        train, test = _train, _test
 
     train_iter = chainer.iterators.SerialIterator(train, args.batchsize)
     test_iter = chainer.iterators.SerialIterator(test, args.batchsize,
