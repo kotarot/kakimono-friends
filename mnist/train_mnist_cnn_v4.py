@@ -13,7 +13,7 @@ from chainer.training import extensions
 # http://www.iandprogram.net/entry/2016/02/11/181322
 class CNN(chainer.Chain):
 
-    def __init__(self, n_units, n_out):
+    def __init__(self, n_out):
         super(CNN, self).__init__(
             conv1=L.Convolution2D(1, 16, 3),  # in_channels=1, out_channels=16, ksize=3
             conv2=L.Convolution2D(16, 32, 3), # in_channels=16, out_channels=32, ksize=3
@@ -42,12 +42,9 @@ def main():
                         help='Directory to output the result')
     parser.add_argument('--resume', '-r', default='',
                         help='Resume the training from snapshot')
-    parser.add_argument('--unit', '-u', type=int, default=1024,
-                        help='Number of units')
     args = parser.parse_args()
 
     print('GPU: {}'.format(args.gpu))
-    print('# unit: {}'.format(args.unit))
     print('# Minibatch-size: {}'.format(args.batchsize))
     print('# epoch: {}'.format(args.epoch))
     print('')
@@ -55,7 +52,7 @@ def main():
     # Set up a neural network to train
     # Classifier reports softmax cross entropy loss and accuracy at every
     # iteration, which will be used by the PrintReport extension below.
-    model = L.Classifier(CNN(args.unit, 10))
+    model = L.Classifier(CNN(10))
     if args.gpu >= 0:
         chainer.cuda.get_device(args.gpu).use()  # Make a specified GPU current
         model.to_gpu()  # Copy the model to the GPU
