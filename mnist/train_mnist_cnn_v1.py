@@ -76,7 +76,7 @@ def main():
         np.random.seed(12345)
         for k in range(4):
             for raw in train_raw:
-                noised = np.random.normal(0, 0.01, (28, 28))
+                noised = np.random.normal(0, 0.02, (28, 28))
                 for j in range(28):
                     for i in range(28):
                         noised[j][i] += raw[0][0][j][i]
@@ -87,7 +87,7 @@ def main():
                 train_data.append(np.array([noised], dtype=np.float32))
                 train_label.append(np.int32(raw[1]))
             for raw in test_raw:
-                noised = np.random.normal(0, 0.01, (28, 28))
+                noised = np.random.normal(0, 0.02, (28, 28))
                 for j in range(28):
                     for i in range(28):
                         noised[j][i] += raw[0][0][j][i]
