@@ -97,8 +97,8 @@ def main():
                             noised[j][i] = 1.0
                 test_data.append(np.array([noised], dtype=np.float32))
                 test_label.append(np.int32(raw[1]))
-            train = chainer.datasets.tuple_dataset.TupleDataset(train_data, train_label)
-            test = chainer.datasets.tuple_dataset.TupleDataset(test_data, test_label)
+        train = chainer.datasets.tuple_dataset.TupleDataset(train_data, train_label)
+        test = chainer.datasets.tuple_dataset.TupleDataset(test_data, test_label)
     # Position shift
     elif args.shift:
         args.out += '_shift'
@@ -143,8 +143,8 @@ def main():
                             shifted[j][i] = 0.0
                 test_data.append(np.array([shifted], dtype=np.float32))
                 test_label.append(np.int32(raw[1]))
-            train = chainer.datasets.tuple_dataset.TupleDataset(train_data, train_label)
-            test = chainer.datasets.tuple_dataset.TupleDataset(test_data, test_label)
+        train = chainer.datasets.tuple_dataset.TupleDataset(train_data, train_label)
+        test = chainer.datasets.tuple_dataset.TupleDataset(test_data, test_label)
     else:
         train, test = _train, _test
 
