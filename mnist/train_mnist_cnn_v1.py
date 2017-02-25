@@ -104,22 +104,14 @@ def main():
         args.out += '_shift'
         train_data, train_label = [], []
         test_data, test_label = [], []
-        for k in range(5):
+        shifts = [(0, 0), (0, -1), (0, 1), (-1, 0), (1, 0), (0, -2), (0, 2), (-2, 0), (2, 0), (-1, -1), (-1, 1), (1, -1), (1, 1)]
+        for k in shifts:
             for raw in train_raw:
                 shifted = [[ 0.0 for __ in range(28) ] for _ in range(28) ]
                 for j in range(28):
                     for i in range(28):
                         try:
-                            if k == 0:
-                                shifted[j][i] = raw[0][0][j][i]
-                            elif k == 1:
-                                shifted[j][i] = raw[0][0][j][i - 1]
-                            elif k == 2:
-                                shifted[j][i] = raw[0][0][j][i + 1]
-                            elif k == 3:
-                                shifted[j][i] = raw[0][0][j - 1][i]
-                            elif k == 4:
-                                shifted[j][i] = raw[0][0][j + 1][i]
+                            shifted[j][i] = raw[0][0][j + k[0]][i + k[1]]
                         except IndexError:
                             shifted[j][i] = 0.0
                 train_data.append(np.array([shifted], dtype=np.float32))
@@ -129,16 +121,7 @@ def main():
                 for j in range(28):
                     for i in range(28):
                         try:
-                            if k == 0:
-                                shifted[j][i] = raw[0][0][j][i]
-                            elif k == 1:
-                                shifted[j][i] = raw[0][0][j][i - 1]
-                            elif k == 2:
-                                shifted[j][i] = raw[0][0][j][i + 1]
-                            elif k == 3:
-                                shifted[j][i] = raw[0][0][j - 1][i]
-                            elif k == 4:
-                                shifted[j][i] = raw[0][0][j + 1][i]
+                            shifted[j][i] = raw[0][0][j + k[0]][i + k[1]]
                         except IndexError:
                             shifted[j][i] = 0.0
                 test_data.append(np.array([shifted], dtype=np.float32))
