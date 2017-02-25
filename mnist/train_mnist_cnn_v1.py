@@ -10,34 +10,20 @@ from chainer.training import extensions
 
 import numpy as np
 import mnistex
-
-
-# Network definition
-# http://data.gunosy.io/entry/2016/07/28/180943
-class CNN(chainer.Chain):
-
-    def __init__(self, n_out):
-        super(CNN, self).__init__(
-            conv1=L.Convolution2D(1, 32, 5),  # in_channles=1, out_channels=32, ksize=5
-            conv2=L.Convolution2D(32, 64, 5), # in_channles=32, out_channels=64, ksize=5
-            l1=L.Linear(1024, n_out)
-        )
-
-    def __call__(self, x):
-        h1 = F.max_pooling_2d(F.relu(self.conv1(x)), 2)  # ksize=2
-        h2 = F.max_pooling_2d(F.relu(self.conv2(h1)), 2) # ksize=2
-        return self.l1(h2)
+import cnn
 
 
 def main():
     parser = argparse.ArgumentParser(description='Chainer example: MNIST')
+    parser.add_argument('--cnn', '-c', type=int, default=1,
+                        help='CNN type (1--5)')
     parser.add_argument('--batchsize', '-b', type=int, default=100,
                         help='Number of images in each mini-batch')
     parser.add_argument('--epoch', '-e', type=int, default=20,
                         help='Number of sweeps over the dataset to train')
     parser.add_argument('--gpu', '-g', type=int, default=-1,
                         help='GPU ID (negative value indicates CPU)')
-    parser.add_argument('--out', '-o', default='result_cnn_v1',
+    parser.add_argument('--out', '-o', default='result_cnn',
                         help='Directory to output the result')
     parser.add_argument('--resume', '-r', default='',
                         help='Resume the training from snapshot')
@@ -50,6 +36,7 @@ def main():
     print('GPU: {}'.format(args.gpu))
     print('# Minibatch-size: {}'.format(args.batchsize))
     print('# epoch: {}'.format(args.epoch))
+    print('CNN: cnn{}'.format(args.cnn))
     print('MNIST noise: {}'.format(args.noise))
     print('MNIST shift: {}'.format(args.shift))
     print('')
@@ -57,7 +44,17 @@ def main():
     # Set up a neural network to train
     # Classifier reports softmax cross entropy loss and accuracy at every
     # iteration, which will be used by the PrintReport extension below.
-    model = L.Classifier(CNN(10))
+    args.out += str(args.cnn)
+    if args.cnn == 1:
+        model = L.Classifier(cnn.CNN_1(10))
+    elif args.cnn == 2:
+        model = L.Classifier(cnn.CNN_2(10))
+    elif args.cnn == 3:
+        model = L.Classifier(cnn.CNN_3(10))
+    elif args.cnn == 4:
+        model = L.Classifier(cnn.CNN_4(10))
+    elif args.cnn == 5:
+        model = L.Classifier(cnn.CNN_5(10))
     if args.gpu >= 0:
         chainer.cuda.get_device(args.gpu).use()  # Make a specified GPU current
         model.to_gpu()  # Copy the model to the GPU
