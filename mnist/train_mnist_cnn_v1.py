@@ -9,6 +9,7 @@ from chainer import training
 from chainer.training import extensions
 
 import numpy as np
+import mnistex
 
 
 # Network definition
@@ -71,65 +72,13 @@ def main():
     # Add noise
     if args.noise:
         args.out += '_noise'
-        train_data, train_label = [], []
-        test_data, test_label = [], []
-        np.random.seed(12345)
-        for k in range(4):
-            for raw in train_raw:
-                noised = np.random.normal(0, 0.02, (28, 28))
-                for j in range(28):
-                    for i in range(28):
-                        noised[j][i] += raw[0][0][j][i]
-                        if noised[j][i] < 0:
-                            noised[j][i] = 0.0
-                        elif 1 < noised[j][i]:
-                            noised[j][i] = 1.0
-                train_data.append(np.array([noised], dtype=np.float32))
-                train_label.append(np.int32(raw[1]))
-            for raw in test_raw:
-                noised = np.random.normal(0, 0.02, (28, 28))
-                for j in range(28):
-                    for i in range(28):
-                        noised[j][i] += raw[0][0][j][i]
-                        if noised[j][i] < 0:
-                            noised[j][i] = 0.0
-                        elif 1 < noised[j][i]:
-                            noised[j][i] = 1.0
-                test_data.append(np.array([noised], dtype=np.float32))
-                test_label.append(np.int32(raw[1]))
-        train = chainer.datasets.tuple_dataset.TupleDataset(train_data, train_label)
-        test = chainer.datasets.tuple_dataset.TupleDataset(test_data, test_label)
+        train, test = mnistex.gen_mnist_with_noise(train_raw, test_raw)
     # Position shift
     elif args.shift:
         args.out += '_shift'
-        train_data, train_label = [], []
-        test_data, test_label = [], []
-        shifts = [(0, 0), (0, -1), (0, 1), (-1, 0), (1, 0), (0, -2), (0, 2), (-2, 0), (2, 0), (-1, -1), (-1, 1), (1, -1), (1, 1)]
-        for k in shifts:
-            for raw in train_raw:
-                shifted = [[ 0.0 for __ in range(28) ] for _ in range(28) ]
-                for j in range(28):
-                    for i in range(28):
-                        try:
-                            shifted[j][i] = raw[0][0][j + k[0]][i + k[1]]
-                        except IndexError:
-                            shifted[j][i] = 0.0
-                train_data.append(np.array([shifted], dtype=np.float32))
-                train_label.append(np.int32(raw[1]))
-            for raw in test_raw:
-                shifted = [[ 0.0 for __ in range(28) ] for _ in range(28) ]
-                for j in range(28):
-                    for i in range(28):
-                        try:
-                            shifted[j][i] = raw[0][0][j + k[0]][i + k[1]]
-                        except IndexError:
-                            shifted[j][i] = 0.0
-                test_data.append(np.array([shifted], dtype=np.float32))
-                test_label.append(np.int32(raw[1]))
-        train = chainer.datasets.tuple_dataset.TupleDataset(train_data, train_label)
-        test = chainer.datasets.tuple_dataset.TupleDataset(test_data, test_label)
+        train, test = mnistex.gen_mnist_with_shift(train_raw, test_raw)
     else:
-        train, test = _train, _test
+        train, test = train_raw, test_raw
 
     train_iter = chainer.iterators.SerialIterator(train, args.batchsize)
     test_iter = chainer.iterators.SerialIterator(test, args.batchsize,
