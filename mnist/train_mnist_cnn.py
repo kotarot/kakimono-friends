@@ -125,5 +125,9 @@ def main():
     # Run the training
     trainer.run()
 
+    # Save model for test
+    model.to_cpu()
+    chainer.serializers.save_npz('{}/model.npz'.format(args.out), model)
+
 if __name__ == '__main__':
     main()

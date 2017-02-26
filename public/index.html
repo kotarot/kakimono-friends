@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta name="viewport" content="initial-scale=1.0,width=device-width">
+  <title>Chainer MNIST</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <div class="row"><div class="col-md-12">
+      Input:<br>
+      <canvas id="main" width="336" height="336" style="border: 1px solid #999"></canvas><br>
+      <!--<canvas id="debug" width="140" height="140" style="border: 1px solid #999"></canvas><br>-->
+      <button id="clear" class="btn btn-default">Clear</button>
+    </div></div>
+    <hr style="margin-top: 10px; margin-bottom: 10px;">
+    <div class="row"><div class="col-md-12">
+      Result:<br>
+      <span id="result" style="font-weight: bold; color: #c00;"></span>
+    </div></div>
+  </div>
+
+<style>
+body {
+    font-size: 16px !important;
+}
+</style>
+
+<script>
+// 参考
+// sugyan/tensorflow-mnist https://github.com/sugyan/tensorflow-mnist
+// たゆたうの魂: 第3回HTML5のススメ http://soul-of-tayutau.tayutau.co.jp/2011/09/3html5.html
+//
+
+var canvas = document.getElementById('main');
+var ctx = canvas.getContext('2d');
+
+//var canvas_debug = document.getElementById('debug');
+//var ctx_debug = canvas_debug.getContext('2d');
+
+var init = function() {
+    canvas.width = 12 * 28;
+    canvas.height = 12 * 28;
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, 12 * 28, 12 * 28);
+    $('#result').text('');
+};
+
+var getPosition = function(clientX, clientY) {
+    var rect = canvas.getBoundingClientRect();
+    return { x: clientX - rect.left, y: clientY - rect.top };
+};
+
+var drawing = false;
+var prev;
+
+var _start = function(e) {
+    canvas.style.cursor = 'default';
+    drawing = true;
+    prev = getPosition(e.clientX, e.clientY);
+};
+var onMouseDown = function(e) {
+    _start(e);
+    e.preventDefault();
+    return false;
+};
+var onTouchStart = function() {
+    var e = event.touches[0];
+    _start(e);
+    event.preventDefault();
+    return false;
+};
+
+var _end = function(e) {
+    drawing = false;
+
+    // 28 * 28 のグレースケールデータを作る
+    var dataarr = new Array(28 * 28);
+    var img = ctx.getImageData(0, 0, 12 * 28, 12 * 28);
+    for (var i = 0; i < 28; i++) {
+        for (var j = 0; j < 28; j++) {
+            var base = 4 * 12 * (i * 28 * 12 + j);
+
+            // 平坦化する
+            var sum = 0.0;
+            for (var a = 0; a < 12; a++) {
+                for (var b = 0; b < 12; b++) {
+                    var n = base + 4 * (a * 12 * 28 + b);
+                    sum += img.data[n] + img.data[n + 1] + img.data[n + 2];
+                }
+            }
+            sum /= 3.0 * 12.0 * 12.0;
+            sum = Math.floor(sum);
+            dataarr[i * 28 + j] = sum;
+            //ctx_debug.fillStyle = 'rgb(' + sum + ',' + sum + ',' + sum + ')';
+            //ctx_debug.fillRect(j * 5, i * 5, 5, 5);
+        }
+    }
+
+    $.get({
+        url: './api.php',
+        data: {
+            inputdata: dataarr.join(',')
+        },
+        success: function(data) {
+            $('#result').text(data);
+        },
+        dataType: 'text'
+    });
+};
+var onMouseUp = function(e) {
+    _end(e);
+    e.preventDefault();
+    return false;
+};
+var onTouchEnd = function() {
+    var e = event.touches[0];
+    _end(e);
+    event.preventDefault();
+    return false;
+};
+
+var _move = function(e) {
+    if (drawing) {
+        var current = getPosition(e.clientX, e.clientY);
+        ctx.lineWidth = 24;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(prev.x, prev.y);
+        ctx.lineTo(current.x, current.y);
+        ctx.stroke();
+        ctx.closePath();
+        prev = current;
+    }
+};
+var onMouseMove = function(e) {
+    _move(e);
+    e.preventDefault();
+    return false;
+};
+var onTouchMove = function() {
+    var e = event.touches[0];
+    _move(e);
+    event.preventDefault();
+    return false;
+};
+
+canvas.addEventListener('mousedown', onMouseDown, false);
+canvas.addEventListener('mouseup', onMouseUp, false);
+canvas.addEventListener('mousemove', onMouseMove, false);
+canvas.addEventListener('touchstart', onTouchStart, false);
+canvas.addEventListener('touchend', onTouchEnd, false);
+canvas.addEventListener('touchmove', onTouchMove, false);
+
+$(function() {
+    init();
+});
+$('#clear').click(function() {
+    init();
+});
+</script>
+
+</body>
+</html>

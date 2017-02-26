@@ -1,5 +1,6 @@
 # Kakimono Friends
 
+
 ## Installation
 
 Python 2.7.13
@@ -13,6 +14,18 @@ If necessary,
 ```
 export CHAINER_DATASET_ROOT="/path/to/chainer/dataset"
 ```
+
+For web server,
+```
+pip install Flask==0.12
+```
+
+Add
+```
+*/1 * * * * python /path/to/kakimono-friends/mnist/app.py
+```
+in `crontab`.
+
 
 ## Execution
 
