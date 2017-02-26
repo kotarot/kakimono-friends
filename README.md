@@ -20,6 +20,13 @@ For web server,
 pip install Flask==0.12
 ```
 
+On web server,
+
+1. Copy `public/*` to your public directory.
+1. Replace `127.0.0.1` in `api.php` to your application server host, if necessary.
+
+On application server,
+
 Add
 ```
 */1 * * * * python /path/to/kakimono-friends/mnist/app.py
