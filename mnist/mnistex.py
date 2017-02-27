@@ -37,7 +37,7 @@ def gen_mnist_with_noise(train_raw, test_raw, repeat=4, seed=12345, scale=0.02):
 def gen_mnist_with_shift(train_raw, test_raw):
     train_data, train_label = [], []
     test_data, test_label = [], []
-    shifts = [(0, 0), (0, -1), (0, 1), (-1, 0), (1, 0), (0, -2), (0, 2), (-2, 0), (2, 0), (-1, -1), (-1, 1), (1, -1), (1, 1)]
+    shifts = [(0, 0), (0, -1), (0, 1), (-1, 0), (1, 0), (0, -2), (0, 2), (-2, 0), (2, 0), (-1, -1), (-1, 1), (1, -1), (1, 1), (0, -4), (0, 4), (-4, 0), (4, 0)]
     for k in shifts:
         for raw in train_raw:
             shifted = [[ 0.0 for __ in range(28) ] for _ in range(28) ]
