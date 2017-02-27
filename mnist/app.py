@@ -8,8 +8,8 @@ import test_mnist_cnn
 @app.route('/', methods=['POST'])
 def hello():
     return str(test_mnist_cnn.test_mnist(
-        1,
-        '{}/result_cnn1/model.npz'.format(os.path.abspath(os.path.dirname(__file__))),
+        2,
+        '{}/result_cnn2_shift/model.npz'.format(os.path.abspath(os.path.dirname(__file__))),
         request.form['inputdata']
     )) + '\n'
 
